@@ -1,0 +1,8 @@
+# MCP
+fastmcp
+
+# requests
+requests
+
+# OpenAI
+openai
