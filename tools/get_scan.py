@@ -25,7 +25,8 @@ def register_get_scan(mcp):
 
         headers = {
             "Authorization": urlDNA_api_key,
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
+            "User-Agent": "urlDNA-MCP"
         }
 
         url = f"{config.urlDNA_API_URL}/scan/{scan_id}"

@@ -46,8 +46,9 @@ def truncate_scan_length(scan_result):
     """
     context_length = get_max_context_length()
     
+    # Set default Content Length: 100K characters
     if context_length <= 0:
-        return scan_result
+        context_length = 100000
 
     # Helper to calculate JSON size in characters
     def json_length(obj):

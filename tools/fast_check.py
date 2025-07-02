@@ -25,7 +25,8 @@ def register_fast_check(mcp):
 
         headers = {
             "Authorization": urlDNA_api_key,
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
+            "User-Agent": "urlDNA-MCP"
         }
 
         res = requests.post(f"{config.urlDNA_API_URL}/fast-check", json={"url": url}, headers=headers)

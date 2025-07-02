@@ -35,7 +35,8 @@ def register_search(mcp):
 
         headers = {
             "Authorization": urlDNA_api_key,
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
+            "User-Agent": "urlDNA-MCP"
         }
 
         # Perform the search request

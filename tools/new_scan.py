@@ -24,7 +24,8 @@ def register_new_scan(mcp):
 
         headers = {
             "Authorization": urlDNA_api_key,
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
+            "User-Agent": "urlDNA-MCP"
         }
 
         # Submit new scan
