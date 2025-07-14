@@ -45,17 +45,18 @@ def truncate_scan_length(scan_result):
     :return: dict - truncated scan result
     """
     context_length = get_max_context_length()
+
+    # Work on a copy to avoid mutating the original input
+    truncated = dict(scan_result)
     
-    # Set default Content Length: 100K characters
+    # If context length not provided remove dom anyway
     if context_length <= 0:
-        context_length = 100000
+        if "dom" in truncated:
+            del truncated["dom"]
 
     # Helper to calculate JSON size in characters
     def json_length(obj):
         return len(json.dumps(obj, separators=(',', ':')))
-
-    # Work on a copy to avoid mutating the original input
-    truncated = dict(scan_result)
 
     # If already under the limit, return as-is
     if json_length(truncated) <= context_length:
