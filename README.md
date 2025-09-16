@@ -7,6 +7,66 @@ The `urlDNA MCP Server` enables native tool use for security-focused LLM agents 
 
 ---
 
+## Installation & Setup
+
+This project uses [uv](https://docs.astral.sh/uv/) for fast Python package management.
+
+### Prerequisites
+
+Install uv if you haven't already:
+```bash
+# On macOS and Linux
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# On Windows
+powershell -c "irm https://astral.sh/uv/install.ps1 | iex"
+
+# Or with pip
+pip install uv
+```
+
+### Quick Start
+
+1. **Clone and setup the project:**
+```bash
+git clone <repository-url>
+cd urlDNA-mcp-server
+uv sync
+```
+
+2. **Run the MCP server locally (stdio mode):**
+```bash
+uv run python urldna_mcp/run.py
+```
+
+3. **Run the MCP server in SSE mode:**
+```bash
+uv run python urldna_mcp/server.py
+```
+
+### Development
+
+To work on the project:
+
+```bash
+# Install development dependencies
+uv sync --dev
+
+# Run tests (when available)
+uv run pytest
+
+# Format code
+uv run black .
+
+# Type checking
+uv run mypy .
+
+# Lint code
+uv run flake8 .
+```
+
+---
+
 ## Hosted MCP Server
 
 The `urlDNA MCP` server is already **hosted and available** at:
@@ -42,9 +102,11 @@ To integrate the `urlDNA MCP server` in Claude Desktop, update your Claude confi
 {
   "mcpServers": {
     "urlDNA": {
-      "command": "python",
+      "command": "uv",
       "args": [
-        "<YOUR_PATH>/run.py"
+        "run",
+        "python",
+        "<YOUR_PATH>/urldna_mcp/run.py"
       ],
       "env": {
         "authorization": "<urlDNA_API_KEY>"
@@ -54,7 +116,7 @@ To integrate the `urlDNA MCP server` in Claude Desktop, update your Claude confi
 }
 ```
 
-> Replace `<YOUR_PATH>` with the actual path to `run.py`, and `<urlDNA_API_KEY>` with your API key from [https://urldna.io](https://urldna.io).
+> Replace `<YOUR_PATH>` with the actual path to the project directory, and `<urlDNA_API_KEY>` with your API key from [https://urldna.io](https://urldna.io).
 
 Once configured, you can prompt Claude with natural language requests like:
 
@@ -107,16 +169,28 @@ response = client.responses.create(
 print(response.output)
 ```
 
+## Container Deployment
 
-## Requirements
-
-- Python 3.9+
-
-Install dependencies:
+Build and run with Docker:
 
 ```bash
-pip install -r requirements.txt
+# Build the container
+docker build -t urldna-mcp-server .
+
+# Run the server
+docker run -p 8080:8080 -e authorization=<URLDNA_API_KEY> urldna-mcp-server
 ```
+
+---
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch: `git checkout -b feature-name`
+3. Install development dependencies: `uv sync --dev`
+4. Make your changes and ensure tests pass
+5. Format code: `uv run black .`
+6. Submit a pull request
 
 ---
 

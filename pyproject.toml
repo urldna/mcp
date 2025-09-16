@@ -1,0 +1,63 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "urldna-mcp-server"
+version = "0.1.0"
+description = "urlDNA MCP Server - The DNA test for websites"
+authors = [
+    {name = "urlDNA", email = "urldna@urldna.io"}
+]
+readme = "README.md"
+license = {file = "LICENSE"}
+requires-python = ">=3.10"
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Security",
+    "Topic :: Internet :: WWW/HTTP",
+]
+
+dependencies = [
+    "fastmcp",
+    "requests",
+    "openai",
+]
+
+[project.urls]
+Homepage = "https://urldna.io"
+Documentation = "https://github.com/urldna/mcp"
+Repository = "https://github.com/urldna/mcp.git"
+"Bug Tracker" = "https://github.com/urldna/mcp/issues"
+
+[tool.uv]
+dev-dependencies = [
+    "pytest>=7.0",
+    "pytest-cov>=4.0",
+    "black>=23.0",
+    "flake8>=6.0",
+    "mypy>=1.0",
+]
+
+[tool.black]
+line-length = 88
+target-version = ['py310']
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+
+[tool.hatch.build.targets.wheel]
+packages = ["tools"]
+
+[project.scripts]
+falcon-mcp = "urldna_mcp.server:main"

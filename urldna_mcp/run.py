@@ -7,7 +7,9 @@ from tools.get_scan import register_get_scan
 from tools.search import register_search
 from tools.fast_check import register_fast_check
 
-if __name__ == "__main__":
+
+def main():
+    """Main entry point for the urlDNA MCP server."""
     # Create MCP
     mcp = FastMCP(name="urlDNA MCP", instructions="Submit and retrieve scan data from urlDNA")
 
@@ -19,3 +21,7 @@ if __name__ == "__main__":
 
     # RUN
     mcp.run(transport="stdio")
+
+
+if __name__ == "__main__":
+    main()
