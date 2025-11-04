@@ -3,6 +3,10 @@
 
 ![Claude Prompt](https://github.com/urldna/mcp/blob/main/claude_prompt.png?raw=true)
 
+<a href="https://glama.ai/mcp/servers/@urldna/mcp">
+  <img width="380" height="200" src="https://glama.ai/mcp/servers/@urldna/mcp/badge" alt="urlDNA Server MCP server" />
+</a>
+
 The `urlDNA MCP Server` enables native tool use for security-focused LLM agents like OpenAI GPT-4.1 and Claude 3 Desktop, providing a direct interface to interact with the [urlDNA](https://urldna.io) threat intelligence platform via API.
 
 ---
