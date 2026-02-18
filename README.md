@@ -1,6 +1,6 @@
 # urlDNA MCP Server
 
-[Blog](https://medium.com/@urldna/introducing-the-urldna-mcp-server-native-threat-intelligence-for-llm-agents-6330a35dcf05)
+[Blog](https://urldna.io/blog/introducing-the-urldna-mcp-server-native-threat-intelligence-for-llm-agents)
 
 ![Claude Prompt](https://github.com/urldna/mcp/blob/main/claude_prompt.png?raw=true)
 
@@ -137,9 +137,10 @@ To integrate the `urlDNA MCP server` in Claude Desktop, update your `claude_desk
     "urlDNA": {
       "command": "uv",
       "args": [
+        "--directory",
+        "C:\\Users\\pripamonti\\urlDNA\\mcp\\urldna_mcp",
         "run",
-        "python",
-        "<YOUR_PATH>/urldna_mcp/run.py"
+        "run.py"
       ],
       "env": {
         "authorization": "<urlDNA_API_KEY>"

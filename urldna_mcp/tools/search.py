@@ -6,7 +6,7 @@ from typing import Optional
 
 def register_search(mcp):
 
-    @mcp.tool()
+    @mcp.tool(name="search", title="Search")
     def search(query: str, page: Optional[int] = 1):
         """
         Search urlDNA scans using CQL (Custom Query Language) syntax.

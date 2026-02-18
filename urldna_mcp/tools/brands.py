@@ -6,7 +6,7 @@ from typing import Optional
 
 def register_brands(mcp):
 
-    @mcp.tool()
+    @mcp.tool(name="list_brands", title="List Brands")
     def list_brands(
         filter: Optional[str] = None,
         query: Optional[str] = None,
@@ -84,7 +84,7 @@ def register_brands(mcp):
 
         return res.json()
 
-    @mcp.tool()
+    @mcp.tool(name="get_brand", title="Get Brand")
     def get_brand(brand_id: str):
         """
         Retrieve the full details of a specific brand by its ID.
@@ -121,7 +121,7 @@ def register_brands(mcp):
 
         return res.json()
 
-    @mcp.tool()
+    @mcp.tool(name="brand_scans", title="Brand Scans")
     def get_brand_scans(
         brand_id: str,
         query: Optional[str] = None,

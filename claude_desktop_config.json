@@ -3,9 +3,10 @@
     "urlDNA": {
       "command": "uv",
       "args": [
+        "--directory",
+        "<YOUR_PATH>/urldna_mcp",
         "run",
-        "python",
-        "<YOUR_PATH>/urldna_mcp/run.py"
+        "run.py"
       ],
       "env": {
         "authorization": "<urlDNA_API_KEY>"

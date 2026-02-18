@@ -3,10 +3,13 @@ import requests
 import config
 from utils import get_api_key, truncate_scan_length, normalize_url
 
+# MCP
+from fastmcp.server import FastMCP
 
-def register_new_scan(mcp):
 
-    @mcp.tool()
+def register_new_scan(mcp: FastMCP):
+
+    @mcp.tool(name="new_scan", title="New Scan")
     def new_scan(url: str):
         """
         Submit a URL to urlDNA for a full scan and wait for the result.

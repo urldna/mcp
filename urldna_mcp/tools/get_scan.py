@@ -5,7 +5,7 @@ from utils import get_api_key, truncate_scan_length
 
 def register_get_scan(mcp):
 
-    @mcp.tool()
+    @mcp.tool(name="get_scan", title="Get Scan")
     def get_scan(scan_id: str):
         """
         Retrieve the full results of a previously submitted urlDNA scan by its ID.

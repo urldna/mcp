@@ -5,7 +5,7 @@ from utils import get_api_key, normalize_url
 
 def register_fast_check(mcp):
 
-    @mcp.tool()
+    @mcp.tool(name="fast_check", title="Fast Check")
     def fast_check(url: str):
         """
         Quickly check if a URL has already been scanned in the urlDNA database.
