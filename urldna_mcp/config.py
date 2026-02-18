@@ -28,13 +28,13 @@ INSTRUCTIONS = (
     "- create_query        : Create a new saved query with named filter conditions.\n"
     "- update_query        : Update an existing query's name and filters (full replacement).\n"
     "- delete_query        : Permanently delete a saved query by ID.\n"
-    "- execute_query_scans : Run a saved query and retrieve all matching scans.\n\n"
+    "- query_scans : Run a saved query and retrieve all matching scans.\n\n"
 
     "BRAND MONITORING TOOLS (PREMIUM):\n"
     "- list_brands     : List available brands for monitoring, with optional name search and visibility filter "
     "(ALL / FREE / PREMIUM / USER_BRANDS).\n"
     "- get_brand       : Retrieve full details of a specific brand by ID.\n"
-    "- get_brand_scans : Retrieve all scans associated with a brand. Supports optional CQL filtering "
+    "- brand_scans : Retrieve all scans associated with a brand. Supports optional CQL filtering "
     "to narrow results (e.g., malicious = true AND country_code = IT).\n\n"
 
     "API DOCUMENTATION:\n"

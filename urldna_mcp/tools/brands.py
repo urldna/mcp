@@ -122,7 +122,7 @@ def register_brands(mcp):
         return res.json()
 
     @mcp.tool(name="brand_scans", title="Brand Scans")
-    def get_brand_scans(
+    def brand_scans(
         brand_id: str,
         query: Optional[str] = None,
         page: Optional[int] = 1
@@ -148,16 +148,16 @@ def register_brands(mcp):
 
         --- EXAMPLES ---
         Get all scans for a brand:
-            get_brand_scans(brand_id="abc123")
+            brand_scans(brand_id="abc123")
 
         Get only malicious scans for a brand:
-            get_brand_scans(brand_id="abc123", query="malicious = true")
+            brand_scans(brand_id="abc123", query="malicious = true")
 
         Get mobile scans from Italy for a brand:
-            get_brand_scans(brand_id="abc123", query="device = MOBILE AND country_code = IT")
+            brand_scans(brand_id="abc123", query="device = MOBILE AND country_code = IT")
 
         Get second page of results:
-            get_brand_scans(brand_id="abc123", page=2)
+            brand_scans(brand_id="abc123", page=2)
 
         Args:
             brand_id (str): Unique identifier of the brand to retrieve scans for.
@@ -176,7 +176,7 @@ def register_brands(mcp):
         try:
             urlDNA_api_key = get_api_key()
         except Exception as e:
-            raise RuntimeError(f"[get_brand_scans] Failed to retrieve API key: {e}")
+            raise RuntimeError(f"[brand_scans] Failed to retrieve API key: {e}")
 
         headers = {
             "Authorization": urlDNA_api_key,
@@ -194,6 +194,6 @@ def register_brands(mcp):
             headers=headers
         )
         if not res.ok:
-            raise RuntimeError(f"[get_brand_scans] Request failed: {res.status_code} - {res.text}")
+            raise RuntimeError(f"[brand_scans] Request failed: {res.status_code} - {res.text}")
 
         return res.json()

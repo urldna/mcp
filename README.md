@@ -109,7 +109,7 @@ You can use it directly with any platform or LLM that supports the MCP specifica
 | `create_query`        | Create a new saved query with one or more CQL filter conditions.         |
 | `update_query`        | Update an existing query's name and filters (full replacement).          |
 | `delete_query`        | Permanently delete a saved query by ID.                                  |
-| `execute_query_scans` | Execute a saved query and retrieve all matching scans.                   |
+| `query_scans`         | Retrieve all matching scans for a saved query.                           |
 
 ### Brand Monitoring
 
@@ -117,7 +117,7 @@ You can use it directly with any platform or LLM that supports the MCP specifica
 |-------------------|--------------------------------------------------------------------------------------------------|
 | `list_brands`     | List available brands with optional name search and visibility filter (ALL / FREE / PREMIUM / USER_BRANDS). |
 | `get_brand`       | Retrieve full details of a specific brand by ID.                                                 |
-| `get_brand_scans` | Get all scans associated with a brand. Supports additional CQL filtering.                        |
+| `brand_scans`     | Get all scans associated with a brand. Supports additional CQL filtering.                        |
 
 ### API Reference
 
@@ -209,12 +209,12 @@ response = client.responses.create(
                 "create_query",
                 "update_query",
                 "delete_query",
-                "execute_query_scans",
+                "query_scans",
 
                 # --- Brand Monitoring (PREMIUM) ---
                 "list_brands",
                 "get_brand",
-                "get_brand_scans",
+                "brand_scans",
 
                 # --- API Reference ---
                 "get_api_docs",

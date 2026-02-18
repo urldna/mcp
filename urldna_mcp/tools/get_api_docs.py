@@ -3,7 +3,7 @@ import requests
 
 def register_get_api_docs(mcp):
 
-    @mcp.tool(name="api_documentation", title="API Documentation")
+    @mcp.tool(name="get_api_docs", title="API Documentation")
     def get_api_docs():
         """
         Retrieve the full urlDNA OpenAPI specification (v3) from the official documentation repository.

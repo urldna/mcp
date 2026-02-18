@@ -34,7 +34,7 @@ def _validate_filters(query_filters: list):
 
 def register_queries(mcp):
 
-    @mcp.tool(name="queries", title="List Queries")
+    @mcp.tool(name="list_queries", title="List Queries")
     def list_queries():
         """
         List all saved queries for the authenticated user.
@@ -44,7 +44,7 @@ def register_queries(mcp):
         conditions that are combined with logical AND.
 
         Use this to discover existing queries before creating new ones or to retrieve
-        query IDs needed for get_query, execute_query_scans, update_query, or delete_query.
+        query IDs needed for get_query, query_scans, update_query, or delete_query.
 
         Returns:
             list[dict]: Array of Query objects, each containing:
@@ -110,7 +110,7 @@ def register_queries(mcp):
         return res.json()
 
     @mcp.tool(name="query_scans", title="Query Scans")
-    def execute_query_scans(query_id: str, page: Optional[int] = 1):
+    def query_scans(query_id: str, page: Optional[int] = 1):
         """
         Execute a saved query and return all matching scans.
 
@@ -132,7 +132,7 @@ def register_queries(mcp):
         try:
             urlDNA_api_key = get_api_key()
         except Exception as e:
-            raise RuntimeError(f"[execute_query_scans] Failed to retrieve API key: {e}")
+            raise RuntimeError(f"[query_scans] Failed to retrieve API key: {e}")
 
         headers = {
             "Authorization": urlDNA_api_key,
@@ -146,7 +146,7 @@ def register_queries(mcp):
             headers=headers
         )
         if not res.ok:
-            raise RuntimeError(f"[execute_query_scans] Request failed: {res.status_code} - {res.text}")
+            raise RuntimeError(f"[query_scans] Request failed: {res.status_code} - {res.text}")
 
         return res.json()
 

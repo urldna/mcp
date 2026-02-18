@@ -40,12 +40,12 @@ response = client.responses.create(
                 "create_query",         # Create a new saved query with filter conditions
                 "update_query",         # Update an existing saved query (full replacement)
                 "delete_query",         # Permanently delete a saved query
-                "execute_query_scans",  # Run a saved query and return matching scans
+                "query_scans",          # Get all scans associated with a query
 
                 # --- Brand Monitoring (PREMIUM) ---
                 "list_brands",      # List available brands with optional name/visibility filter
                 "get_brand",        # Get full details of a specific brand by ID
-                "get_brand_scans",  # Get all scans associated with a brand (supports CQL filter)
+                "brand_scans",      # Get all scans associated with a brand (supports CQL filter)
 
                 # --- API Reference ---
                 "get_api_docs",     # Fetch the full urlDNA OpenAPI specification
