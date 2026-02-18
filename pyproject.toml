@@ -27,8 +27,7 @@ classifiers = [
 
 dependencies = [
     "fastmcp",
-    "requests",
-    "openai",
+    "requests"
 ]
 
 [project.urls]
@@ -37,14 +36,6 @@ Documentation = "https://github.com/urldna/mcp"
 Repository = "https://github.com/urldna/mcp.git"
 "Bug Tracker" = "https://github.com/urldna/mcp/issues"
 
-[tool.uv]
-dev-dependencies = [
-    "pytest>=7.0",
-    "pytest-cov>=4.0",
-    "black>=23.0",
-    "flake8>=6.0",
-    "mypy>=1.0",
-]
 
 [tool.black]
 line-length = 88

@@ -78,3 +78,6 @@ test.py
 .Trashes
 ehthumbs.db
 Thumbs.db
+
+# Cloudbuild
+cloudbuild.yaml

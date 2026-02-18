@@ -1,9 +1,10 @@
 # urlDNA MCP Server
+
 [Blog](https://medium.com/@urldna/introducing-the-urldna-mcp-server-native-threat-intelligence-for-llm-agents-6330a35dcf05)
 
 ![Claude Prompt](https://github.com/urldna/mcp/blob/main/claude_prompt.png?raw=true)
 
-The `urlDNA MCP Server` enables native tool use for security-focused LLM agents like OpenAI GPT-4.1 and Claude 3 Desktop, providing a direct interface to interact with the [urlDNA](https://urldna.io) threat intelligence platform via API.
+The `urlDNA MCP Server` enables native tool use for security-focused LLM agents like OpenAI GPT-4.1 and Claude Desktop, providing a direct interface to interact with the [urlDNA](https://urldna.io) threat intelligence platform via API.
 
 ---
 
@@ -14,6 +15,7 @@ This project uses [uv](https://docs.astral.sh/uv/) for fast Python package manag
 ### Prerequisites
 
 Install uv if you haven't already:
+
 ```bash
 # On macOS and Linux
 curl -LsSf https://astral.sh/uv/install.sh | sh
@@ -28,6 +30,7 @@ pip install uv
 ### Quick Start
 
 1. **Clone and setup the project:**
+
 ```bash
 git clone <repository-url>
 cd urlDNA-mcp-server
@@ -35,18 +38,18 @@ uv sync
 ```
 
 2. **Run the MCP server locally (stdio mode):**
+
 ```bash
 uv run python urldna_mcp/run.py
 ```
 
 3. **Run the MCP server in SSE mode:**
+
 ```bash
 uv run python urldna_mcp/server.py
 ```
 
 ### Development
-
-To work on the project:
 
 ```bash
 # Install development dependencies
@@ -77,26 +80,56 @@ https://mcp.urldna.io/sse
 
 This server is accessible over **Server-Sent Events (SSE)** protocol, which supports streaming interactions between LLMs and the backend tools.
 
-You can use it directly with any platform or LLM supporting the `mcp` specification (e.g., Claude Desktop, OpenAI GPT-4.1).
+You can use it directly with any platform or LLM that supports the MCP specification (e.g., Claude Desktop, OpenAI GPT-4.1).
 
 ---
 
-## Supported Actions
+## Supported Tools
 
-The following tools are exposed by the MCP interface:
+### Scanning
 
-| Tool         | Description                                                    |
-|--------------|----------------------------------------------------------------|
-| `new_scan`   | Submit a new scan for a given URL                              |
-| `get_scan`   | Retrieve a scan by ID                                          |
-| `search`     | Search scans using text, domain, or filters                    |
-| `fast_check` | Lightweight phishing detection via content + redirect analysis |
+| Tool         | Description                                                                 |
+|--------------|-----------------------------------------------------------------------------|
+| `fast_check` | Instantly check if a URL has been scanned. Returns SAFE / MALICIOUS / UNRATED. |
+| `new_scan`   | Submit a URL for a full scan and wait for the result (~30–60s).             |
+| `get_scan`   | Retrieve a complete scan result by ID.                                      |
+
+### Search
+
+| Tool     | Description                                                                                       |
+|----------|---------------------------------------------------------------------------------------------------|
+| `search` | Search scans using CQL (Custom Query Language) across domain, IP, technology, malicious flag, and more. Supports pagination (page 2+ requires PREMIUM). |
+
+### Saved Queries
+
+| Tool                  | Description                                                              |
+|-----------------------|--------------------------------------------------------------------------|
+| `list_queries`        | List all saved queries for the authenticated user.                       |
+| `get_query`           | Retrieve a specific saved query and its filters by ID.                   |
+| `create_query`        | Create a new saved query with one or more CQL filter conditions.         |
+| `update_query`        | Update an existing query's name and filters (full replacement).          |
+| `delete_query`        | Permanently delete a saved query by ID.                                  |
+| `execute_query_scans` | Execute a saved query and retrieve all matching scans.                   |
+
+### Brand Monitoring
+
+| Tool              | Description                                                                                      |
+|-------------------|--------------------------------------------------------------------------------------------------|
+| `list_brands`     | List available brands with optional name search and visibility filter (ALL / FREE / PREMIUM / USER_BRANDS). |
+| `get_brand`       | Retrieve full details of a specific brand by ID.                                                 |
+| `get_brand_scans` | Get all scans associated with a brand. Supports additional CQL filtering.                        |
+
+### API Reference
+
+| Tool           | Description                                                              |
+|----------------|--------------------------------------------------------------------------|
+| `get_api_docs` | Fetch the full urlDNA OpenAPI specification for API integration guidance. |
 
 ---
 
-## Integration with Claude Desktop (Anthropic MCP)
+## Integration with Claude Desktop
 
-To integrate the `urlDNA MCP server` in Claude Desktop, update your Claude configuration (typically `claude.config.json` or equivalent) like so:
+To integrate the `urlDNA MCP server` in Claude Desktop, update your `claude_desktop_config.json`:
 
 ```json
 {
@@ -116,26 +149,30 @@ To integrate the `urlDNA MCP server` in Claude Desktop, update your Claude confi
 }
 ```
 
-> Replace `<YOUR_PATH>` with the actual path to the project directory, and `<urlDNA_API_KEY>` with your API key from [https://urldna.io](https://urldna.io).
+> Replace `<YOUR_PATH>` with the actual path to the project directory and `<urlDNA_API_KEY>` with your API key from [https://urldna.io](https://urldna.io).
 
-Once configured, you can prompt Claude with natural language requests like:
+Once configured, you can prompt Claude with natural language, for example:
 
 > **"Search in urlDNA for malicious scans with title like paypal"**
 
-Claude will automatically call the correct tool and return results from the `urlDNA` platform.
+> **"Create a saved query for mobile scans from Italy that are flagged as malicious"**
+
+> **"Show me all scans associated with the Google brand"**
+
+Claude will automatically call the correct tool and return results from the urlDNA platform.
 
 ---
 
-## Using the MCP Server with OpenAI GPT-4.1 (Python SDK)
+## Using the MCP Server with OpenAI GPT-4.1
 
 ```python
 from openai import OpenAI
 
-# Initialize OpenAI client (assumes API key is set via env var or config)
+# Initialize OpenAI client (assumes OPENAI_API_KEY is set via environment variable)
 client = OpenAI()
 
 response = client.responses.create(
-    model="gpt-4.1",
+    model="gpt-4.1",  # GPT-4.1 supports native MCP tool use
     input=[
         {
             "role": "system",
@@ -143,7 +180,7 @@ response = client.responses.create(
         },
         {
             "role": "user",
-            "content": [{"type": "input_text", "text": "Search in urlDNA malicious scan with title like paypal"}]
+            "content": [{"type": "input_text", "text": "Search in urlDNA for malicious scans with title like paypal"}]
         }
     ],
     text={"format": {"type": "text"}},
@@ -154,9 +191,33 @@ response = client.responses.create(
             "server_label": "urlDNA",
             "server_url": "https://mcp.urldna.io/sse",
             "headers": {
-                "Authorization": "Bearer <URLDNA_API_KEY>"
+                "Authorization": "Bearer <URLDNA_API_KEY>"  # Replace with your urlDNA API key
             },
-            "allowed_tools": ["new_scan", "get_scan", "search", "fast_check"],
+            "allowed_tools": [
+                # --- Scanning ---
+                "new_scan",       # Submit a URL for a full scan and wait for the result
+                "get_scan",       # Retrieve a scan result by ID
+                "fast_check",     # Lightweight instant safety check (SAFE / MALICIOUS / UNRATED)
+
+                # --- Search ---
+                "search",         # Search scans using CQL (Custom Query Language)
+
+                # --- Saved Queries (PREMIUM) ---
+                "list_queries",
+                "get_query",
+                "create_query",
+                "update_query",
+                "delete_query",
+                "execute_query_scans",
+
+                # --- Brand Monitoring (PREMIUM) ---
+                "list_brands",
+                "get_brand",
+                "get_brand_scans",
+
+                # --- API Reference ---
+                "get_api_docs",
+            ],
             "require_approval": "never"
         }
     ],
@@ -168,6 +229,8 @@ response = client.responses.create(
 
 print(response.output)
 ```
+
+---
 
 ## Container Deployment
 
@@ -197,5 +260,3 @@ docker run -p 8080:8080 -e authorization=<URLDNA_API_KEY> urldna-mcp-server
 ## Contact & Support
 
 For support or API access, visit [https://urldna.io](https://urldna.io) or email urldna@urldna.io.
-
----

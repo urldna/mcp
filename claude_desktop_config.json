@@ -1,9 +1,11 @@
 {
   "mcpServers": {
     "urlDNA": {
-      "command": "python",
+      "command": "uv",
       "args": [
-        "<YOUR_PATH>/run.py"
+        "run",
+        "python",
+        "<YOUR_PATH>/urldna_mcp/run.py"
       ],
       "env": {
         "authorization": "<urlDNA_API_KEY>"

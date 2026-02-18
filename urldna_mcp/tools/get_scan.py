@@ -8,20 +8,24 @@ def register_get_scan(mcp):
     @mcp.tool()
     def get_scan(scan_id: str):
         """
-        Get scan results from urlDNA using the scan ID.
+        Retrieve the full results of a previously submitted urlDNA scan by its ID.
+
+        Use this tool when you already have a scan ID (e.g., from new_scan or search results)
+        and want to fetch the detailed scan report. 
 
         Args:
-            scan_id (str): The unique identifier of the scan.
+            scan_id (str): The unique identifier of the scan (e.g., "660d0abc123...").
+                           Obtained from new_scan, fast_check, or search results.
         Returns:
-            dict: Truncated scan result JSON.
+            dict: Truncated scan result JSON including page metadata, threat classification,
+                  technologies, certificates, network info, and more.
         Raises:
-            RuntimeError: If fetch scan fails.
+            RuntimeError: If API key retrieval or the HTTP request fails.
         """
-        # Get urlDNA API key 
         try:
             urlDNA_api_key = get_api_key()
         except Exception as e:
-            raise RuntimeError(f"[new_scan] Failed to retrieve API key: {e}")
+            raise RuntimeError(f"[get_scan] Failed to retrieve API key: {e}")
 
         headers = {
             "Authorization": urlDNA_api_key,
@@ -35,6 +39,6 @@ def register_get_scan(mcp):
         if not res.ok:
             raise RuntimeError(f"[get_scan] Request failed: {res.status_code} - {res.text}")
 
-        scan_result = res.json() 
+        scan_result = res.json()
 
         return truncate_scan_length(scan_result)

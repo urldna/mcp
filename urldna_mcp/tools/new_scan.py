@@ -1,22 +1,41 @@
 import time
 import requests
 import config
-from utils import get_api_key, truncate_scan_length
+from utils import get_api_key, truncate_scan_length, normalize_url
+
 
 def register_new_scan(mcp):
+
     @mcp.tool()
     def new_scan(url: str):
         """
-        Submit a URL to urlDNA and wait for the scan result.
+        Submit a URL to urlDNA for a full scan and wait for the result.
+
+        This tool performs a complete website scan: it submits the URL, then polls
+        the API until the scan finishes (status: DONE) or fails (status: ERROR).
+        The result is automatically truncated to fit within the model's context window.
+
+        The URL is automatically normalized: if no scheme is provided (e.g., "example.com"),
+        "https://" is prepended automatically.
+
+        Polling behavior:
+            - Checks every 2 seconds
+            - Maximum 30 retries (up to ~60 seconds)
+            - Raises an error if the scan does not complete in time
 
         Args:
-            url (str): URL to submit for scanning.
+            url (str): URL to submit for scanning. Can be provided with or without the "https://" prefix.
+                       Examples: "https://example.com", "example.com", "www.suspicious-site.net"
         Returns:
-            dict: Truncated scan result JSON.
+            dict: Truncated scan result JSON from urlDNA, including page metadata,
+                  technologies, HTTP transactions, threat classification, and more.
         Raises:
-            RuntimeError: If submission or polling fails.
+            RuntimeError: If submission fails, polling fails, or the scan does not complete successfully.
         """
-        # Get urlDNA API key 
+        # Normalize URL
+        url = normalize_url(url)
+
+        # Get urlDNA API key
         try:
             urlDNA_api_key = get_api_key()
         except Exception as e:

@@ -1,5 +1,6 @@
 import os
 import json
+from urllib.parse import urlparse
 from fastmcp.server.dependencies import get_http_headers
 
 def get_api_key():
@@ -18,71 +19,72 @@ def get_api_key():
     return urlDNA_api_key
 
 
-def get_max_context_length():
+def normalize_url(url: str) -> str:
     """
-    Get max context length from HTTP headers or os environment.
-    Header key: "contentx-length"
+    Ensure the URL has a valid scheme. Appends 'https://' if missing.
     """
-    headers = get_http_headers()
-    context_length = headers.get("contentx-length")
-    if context_length is None:
-        context_length = os.getenv("contentx-length")
-    try:
-        return int(context_length)
-    except (ValueError, TypeError):
-        return 0
+    url = url.strip()
+    parsed = urlparse(url)
+    if not parsed.scheme:
+        url = "https://" + url
+    return url
 
 
-def truncate_scan_length(scan_result):
+
+def _strip_blob_urls(scan: dict) -> dict:
     """
-    Truncate scan result JSON if it exceeds max context length.
-    Attributes are removed in the following order until the size is within limit:
-    1. "dom"
-    2. "http_transactions"
-    3. "page.text"
-    
-    :param scan_result: dict - urlDNA Scan Result JSON
-    :return: dict - truncated scan result
+    Remove blob_url fields from screenshot and favicon sections to reduce payload size.
     """
-    context_length = get_max_context_length()
+    for field in ("screenshot", "favicon"):
+        section = scan.get(field)
+        if isinstance(section, dict) and "blob_url" in section:
+            section.pop("blob_url")
+    return scan
 
-    # Work on a copy to avoid mutating the original input
-    truncated = dict(scan_result)
-    
-    # If context length not provided remove dom anyway
-    if context_length <= 0:
-        if "dom" in truncated:
-            del truncated["dom"]
 
-    # Helper to calculate JSON size in characters
-    def json_length(obj):
-        return len(json.dumps(obj, separators=(',', ':')))
+def truncate_scan_length(scan_result: dict) -> dict:
+    """
+    Reduce the scan result size to fit within the model's context window.
 
-    # If already under the limit, return as-is
-    if json_length(truncated) <= context_length:
-        return truncated
+    Args:
+        scan_result (dict): Raw urlDNA scan result JSON.
+    Returns:
+        dict: Cleaned and optionally truncated scan result.
+    """
+    if scan_result:
+        # Simplify Certificate
+        if "certificate" in scan_result:
+            for key in ["authority_info_access", "authority_key_identifier", "ct_precert_scts", "subject_key_identifier"]:
+                scan_result["certificate"].pop(key, None)
 
-    # Truncate in the specified order
-    drop_order = [
-        ("dom",),
-        ("http_transactions",),
-        ("page", "text")
-    ]
+        # Remove blob URI
+        if "screenshot" in scan_result:
+            scan_result["screenshot"].pop("blob_uri", None)
+        
+        # Remove blob URI
+        if "favicon" in scan_result:
+            scan_result["favicon"].pop("blob_uri", None)
 
-    for path in drop_order:
-        obj = truncated
-        *parents, last = path
+        # Truncate Page Text (The biggest token eater)
+        if "page" in scan_result and "text" in scan_result["page"]:
+            # Keep just the beginning and end to see structure/content
+            full_text = scan_result["page"]["text"].strip()
+            if len(full_text) > 4000:
+                scan_result["page"]["text"] = full_text[:3500] + "\n[...] [TRUNCATED] [...]\n" + full_text[-500:]
+        
+        # Simplify Cookies
+        if "cookies" in scan_result:
+            scan_result["cookies"] = [{"name": c["name"], "domain": c.get("domain")} for c in scan_result["cookies"]]
+        
+        # remove DOM
+        if "dom" in scan_result:
+            del scan_result["dom"]
+        
+        # HTTP Transactions
+        http_transactions = []
+        for http_transaction in scan_result["http_transactions"]:
+            http_transactions.append(http_transaction["url"])
+        scan_result["http_trnasction"] = http_transaction
 
-        # Navigate to the parent
-        for key in parents:
-            obj = obj.get(key, {})
-            if not isinstance(obj, dict):
-                break
-        else:
-            # Only attempt to remove if the key exists
-            if last in obj:
-                obj.pop(last)
-                if json_length(truncated) <= context_length:
-                    break
-
-    return truncated
+    return scan_result
+        
