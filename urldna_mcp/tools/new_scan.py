@@ -73,7 +73,7 @@ def register_new_scan(mcp: FastMCP):
         retries = 0
         max_retries = 30
 
-        while status not in {"DONE", "ERROR"} and retries < max_retries:
+        while status not in {"DONE", "ERROR", "PAGE_NOT_AVAILABLE"} and retries < max_retries:
             time.sleep(2)
             retries += 1
             try:

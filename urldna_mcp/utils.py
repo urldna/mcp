@@ -53,31 +53,31 @@ def truncate_scan_length(scan_result: dict) -> dict:
     """
     if scan_result:
         # Simplify Certificate
-        if "certificate" in scan_result:
+        if scan_result.get("certificate"):
             for key in ["authority_info_access", "authority_key_identifier", "ct_precert_scts", "subject_key_identifier"]:
                 scan_result["certificate"].pop(key, None)
 
         # Remove blob URI
-        if "screenshot" in scan_result:
+        if scan_result.get("screenshot"):
             scan_result["screenshot"].pop("blob_uri", None)
         
         # Remove blob URI
-        if "favicon" in scan_result:
+        if scan_result.get("favicon"):
             scan_result["favicon"].pop("blob_uri", None)
 
         # Truncate Page Text (The biggest token eater)
-        if "page" in scan_result and "text" in scan_result["page"]:
+        if scan_result.get("page") and scan_result.get("page", {}).get("text"):
             # Keep just the beginning and end to see structure/content
             full_text = scan_result["page"]["text"].strip()
             if len(full_text) > 4000:
                 scan_result["page"]["text"] = full_text[:3500] + "\n[...] [TRUNCATED] [...]\n" + full_text[-500:]
         
         # Simplify Cookies
-        if "cookies" in scan_result:
+        if scan_result.get("cookies"):
             scan_result["cookies"] = [{"name": c["name"], "domain": c.get("domain")} for c in scan_result["cookies"]]
         
         # remove DOM
-        if "dom" in scan_result:
+        if scan_result.get("dom"):
             del scan_result["dom"]
         
         # HTTP Transactions
