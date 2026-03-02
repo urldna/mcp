@@ -1,4 +1,5 @@
-import requests
+import httpx
+
 import config
 from utils import get_api_key, normalize_url
 
@@ -6,7 +7,7 @@ from utils import get_api_key, normalize_url
 def register_fast_check(mcp):
 
     @mcp.tool(name="fast_check", title="Fast Check")
-    def fast_check(url: str):
+    async def fast_check(url: str):
         """
         Quickly check if a URL has already been scanned in the urlDNA database.
 
@@ -39,9 +40,16 @@ def register_fast_check(mcp):
             "User-Agent": "urlDNA-MCP"
         }
 
-        res = requests.post(f"{config.urlDNA_API_URL}/fast-check", json={"url": url}, headers=headers)
+        payload = {"url": url}
+        api_url =  f"{config.urlDNA_API_URL}/fast-check"
 
-        if not res.ok:
-            raise RuntimeError(f"[fast_check] Request failed: {res.status_code} - {res.text}")
+        async with httpx.AsyncClient() as client:
+            try:
+                res = await client.post(api_url, json=payload, headers=headers, timeout=30.0)
+                res.raise_for_status()
 
-        return res.json()
+                return res.json()
+            except httpx.HTTPStatusError as e:
+                raise RuntimeError(f"[fast_check] Request failed: {e.response.status_code} - {e.response.text}")
+            except Exception as e:
+                raise RuntimeError(f"[fast_check] Network error: {e}")

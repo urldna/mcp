@@ -1,4 +1,4 @@
-import requests
+import httpx
 import config
 from utils import get_api_key, truncate_scan_length
 
@@ -6,7 +6,7 @@ from utils import get_api_key, truncate_scan_length
 def register_get_scan(mcp):
 
     @mcp.tool(name="get_scan", title="Get Scan")
-    def get_scan(scan_id: str):
+    async def get_scan(scan_id: str):
         """
         Retrieve the full results of a previously submitted urlDNA scan by its ID.
 
@@ -34,11 +34,16 @@ def register_get_scan(mcp):
         }
 
         url = f"{config.urlDNA_API_URL}/scan/{scan_id}"
-        res = requests.get(url, headers=headers)
 
-        if not res.ok:
-            raise RuntimeError(f"[get_scan] Request failed: {res.status_code} - {res.text}")
+        async with httpx.AsyncClient() as client:
+            try:
+                res = await client.get(url, headers=headers, timeout=30.0)
+                res.raise_for_status()
 
-        scan_result = res.json()
-
-        return truncate_scan_length(scan_result)
+                scan_result = res.json()
+                return truncate_scan_length(scan_result)
+            
+            except httpx.HTTPStatusError as e:
+                raise RuntimeError(f"[get_scan] Request failed: {e.response.status_code} - {e.response.text}")
+            except Exception as e:
+                raise RuntimeError(f"[get_scan] Network error: {e}")

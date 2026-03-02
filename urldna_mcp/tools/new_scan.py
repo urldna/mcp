@@ -1,5 +1,6 @@
-import time
-import requests
+import httpx
+import asyncio
+
 import config
 from utils import get_api_key, truncate_scan_length, normalize_url
 
@@ -10,7 +11,7 @@ from fastmcp.server import FastMCP
 def register_new_scan(mcp: FastMCP):
 
     @mcp.tool(name="new_scan", title="New Scan")
-    def new_scan(url: str):
+    async def new_scan(url: str):
         """
         Submit a URL to urlDNA for a full scan and wait for the result.
 
@@ -50,45 +51,29 @@ def register_new_scan(mcp: FastMCP):
             "User-Agent": "urlDNA-MCP"
         }
 
-        # Submit new scan
-        try:
-            response = requests.post(
-                f"{config.urlDNA_API_URL}/scan",
-                json={"submitted_url": url},
-                headers=headers,
-                timeout=10
-            )
-            response.raise_for_status()
-        except requests.RequestException as e:
-            raise RuntimeError(f"[new_scan] Scan submission failed: {e}")
+        async with httpx.AsyncClient() as client:
+            # Submit Scan
+            res = await client.post(f"{config.urlDNA_API_URL}/scan", json={"submitted_url": url}, headers=headers)
+            res.raise_for_status()
+            scan_id = res.json().get("id")
 
-        scan = response.json()
-        scan_id = scan.get("id")
-        if not scan_id:
-            raise RuntimeError("[new_scan] No scan ID returned from submission.")
-
-        # Polling for scan completion
-        status = scan.get("scan", {}).get("status", "PENDING")
-        scan_result = None
-        retries = 0
-        max_retries = 30
-
-        while status not in {"DONE", "ERROR", "PAGE_NOT_AVAILABLE"} and retries < max_retries:
-            time.sleep(2)
-            retries += 1
+            # Poll (Asynchronously)
+            status = "PENDING"
+            max_retries = 60
+            sleep_time = 2
             try:
-                res = requests.get(
-                    f"{config.urlDNA_API_URL}/scan/{scan_id}",
-                    headers=headers,
-                    timeout=10
-                )
-                res.raise_for_status()
-                scan_result = res.json()
-                status = scan_result.get("scan", {}).get("status", "UNKNOWN")
-            except requests.RequestException as e:
-                raise RuntimeError(f"[new_scan] Failed to fetch scan status: {e}")
+                for _ in range(max_retries):
+                    await asyncio.sleep(sleep_time) 
+                    
+                    check = await client.get(f"{config.urlDNA_API_URL}/scan/{scan_id}", headers=headers)
+                    data = check.json()
+                    status = data.get("scan", {}).get("status", "UNKNOWN")
+                    
+                    if status in {"DONE", "ERROR", "PAGE_NOT_AVAILABLE"}:
+                        if status == "DONE":
+                            return truncate_scan_length(data)
+                        raise RuntimeError(f"[new_scan] Scan failed with status: {status}")
 
-        if status != "DONE":
-            raise RuntimeError(f"[new_scan] Scan did not complete successfully (status: {status})")
-
-        return truncate_scan_length(scan_result)
+                raise RuntimeError(f"[new_scan] Scan timed out after {max_retries*sleep_time} seconds.")
+            except httpx.HTTPStatusError as e:
+                raise RuntimeError(f"[new_scan] Request failed: {e.response.status_code} - {e.response.text}")

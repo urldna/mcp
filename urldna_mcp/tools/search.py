@@ -1,13 +1,14 @@
-import config
-import requests
-from utils import get_api_key
+import httpx
 from typing import Optional
+
+import config
+from utils import get_api_key
 
 
 def register_search(mcp):
 
     @mcp.tool(name="search", title="Search")
-    def search(query: str, page: Optional[int] = 1):
+    async def search(query: str, page: Optional[int] = 1):
         """
         Search urlDNA scans using CQL (Custom Query Language) syntax.
 
@@ -107,14 +108,17 @@ def register_search(mcp):
             "User-Agent": "urlDNA-MCP"
         }
 
-        res = requests.post(
-            f"{config.urlDNA_API_URL}/search",
-            json={"query": query},
-            params={"page": page},
-            headers=headers
-        )
+        payload = {"query": query}
+        params = {"page": page}
+        url = f"{config.urlDNA_API_URL}/search"
 
-        if not res.ok:
-            raise RuntimeError(f"[search] Search failed: {res.status_code} - {res.text}")
+        async with httpx.AsyncClient() as client:
+            try:
+                res = await client.post(url, json=payload, params=params, headers=headers, timeout=30.0)
+                res.raise_for_status()
 
-        return res.json()
+                return res.json()
+            except httpx.HTTPStatusError as e:
+                raise RuntimeError(f"[search] Request failed: {e.response.status_code} - {e.response.text}")
+            except Exception as e:
+                raise RuntimeError(f"[search] Network error: {e}")

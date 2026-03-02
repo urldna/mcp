@@ -1,7 +1,8 @@
-import requests
+import httpx
+from typing import Optional
+
 import config
 from utils import get_api_key
-from typing import Optional
 
 # Valid attributes for QueryFilter
 VALID_ATTRIBUTES = ["id","domain", "ip", "submitted_url", "target_url", "scanned_from", "user_agent", "nsfw", "device",
@@ -35,7 +36,7 @@ def _validate_filters(query_filters: list):
 def register_queries(mcp):
 
     @mcp.tool(name="list_queries", title="List Queries")
-    def list_queries():
+    async def list_queries():
         """
         List all saved queries for the authenticated user.
 
@@ -65,14 +66,21 @@ def register_queries(mcp):
             "User-Agent": "urlDNA-MCP"
         }
 
-        res = requests.get(f"{config.urlDNA_API_URL}/queries", headers=headers)
-        if not res.ok:
-            raise RuntimeError(f"[list_queries] Request failed: {res.status_code} - {res.text}")
+        url = f"{config.urlDNA_API_URL}/queries"
 
-        return res.json()
+        async with httpx.AsyncClient() as client:
+            try:
+                res = await client.get(url, headers=headers, timeout=30.0)
+                res.raise_for_status()
+
+                return res.json()
+            except httpx.HTTPStatusError as e:
+                raise RuntimeError(f"[list_queries] Request failed: {e.response.status_code} - {e.response.text}")
+            except Exception as e:
+                raise RuntimeError(f"[list_queries] Network error: {e}")
 
     @mcp.tool(name="get_query", title="get query")
-    def get_query(query_id: str):
+    async def get_query(query_id: str):
         """
         Retrieve the full details of a specific saved query by its ID.
 
@@ -103,14 +111,21 @@ def register_queries(mcp):
             "User-Agent": "urlDNA-MCP"
         }
 
-        res = requests.get(f"{config.urlDNA_API_URL}/query/{query_id}", headers=headers)
-        if not res.ok:
-            raise RuntimeError(f"[get_query] Request failed: {res.status_code} - {res.text}")
+        url = f"{config.urlDNA_API_URL}/query/{query_id}"
 
-        return res.json()
+        async with httpx.AsyncClient() as client:
+            try:
+                res = await client.get(url, headers=headers, timeout=30.0)
+                res.raise_for_status()
+
+                return res.json()
+            except httpx.HTTPStatusError as e:
+                raise RuntimeError(f"[get_query] Request failed: {e.response.status_code} - {e.response.text}")
+            except Exception as e:
+                raise RuntimeError(f"[get_query] Network error: {e}")
 
     @mcp.tool(name="query_scans", title="Query Scans")
-    def query_scans(query_id: str, page: Optional[int] = 1):
+    async def query_scans(query_id: str, page: Optional[int] = 1):
         """
         Execute a saved query and return all matching scans.
 
@@ -140,18 +155,22 @@ def register_queries(mcp):
             "User-Agent": "urlDNA-MCP"
         }
 
-        res = requests.get(
-            f"{config.urlDNA_API_URL}/query/{query_id}/scans",
-            params={"page": page},
-            headers=headers
-        )
-        if not res.ok:
-            raise RuntimeError(f"[query_scans] Request failed: {res.status_code} - {res.text}")
+        params={"page": page}
+        url = f"{config.urlDNA_API_URL}/query/{query_id}/scans"
 
-        return res.json()
+        async with httpx.AsyncClient() as client:
+            try:
+                res = await client.get(url, params=params, headers=headers, timeout=30.0)
+                res.raise_for_status()
+
+                return res.json()
+            except httpx.HTTPStatusError as e:
+                raise RuntimeError(f"[query_scans] Request failed: {e.response.status_code} - {e.response.text}")
+            except Exception as e:
+                raise RuntimeError(f"[query_scans] Network error: {e}")
 
     @mcp.tool(name="create_query", title="Create Query")
-    def create_query(name: str, query_filters: list):
+    async def create_query(name: str, query_filters: list):
         """
         Create a new saved query with one or more filter conditions.
 
@@ -217,14 +236,21 @@ def register_queries(mcp):
         }
 
         payload = {"name": name, "query_filters": query_filters}
-        res = requests.post(f"{config.urlDNA_API_URL}/query", json=payload, headers=headers)
-        if not res.ok:
-            raise RuntimeError(f"[create_query] Request failed: {res.status_code} - {res.text}")
+        url = f"{config.urlDNA_API_URL}/query"
 
-        return res.json()
+        async with httpx.AsyncClient() as client:
+            try:
+                res = await client.post(url, json=payload, headers=headers, timeout=30.0)
+                res.raise_for_status()
+
+                return res.json()
+            except httpx.HTTPStatusError as e:
+                raise RuntimeError(f"[create_query] Request failed: {e.response.status_code} - {e.response.text}")
+            except Exception as e:
+                raise RuntimeError(f"[create_query] Network error: {e}")
 
     @mcp.tool(name="update_query", title="Update Query")
-    def update_query(query_id: str, name: str, query_filters: list):
+    async def update_query(query_id: str, name: str, query_filters: list):
         """
         Update an existing saved query's name and/or filter conditions.
 
@@ -278,14 +304,21 @@ def register_queries(mcp):
         }
 
         payload = {"name": name, "query_filters": query_filters}
-        res = requests.put(f"{config.urlDNA_API_URL}/query/{query_id}", json=payload, headers=headers)
-        if not res.ok:
-            raise RuntimeError(f"[update_query] Request failed: {res.status_code} - {res.text}")
+        url = f"{config.urlDNA_API_URL}/query/{query_id}"
 
-        return res.json()
+        async with httpx.AsyncClient() as client:
+            try:
+                res = await client.put(url, json=payload, headers=headers, timeout=30.0)
+                res.raise_for_status()
+
+                return res.json()
+            except httpx.HTTPStatusError as e:
+                raise RuntimeError(f"[update_query] Request failed: {e.response.status_code} - {e.response.text}")
+            except Exception as e:
+                raise RuntimeError(f"[update_query] Network error: {e}")
 
     @mcp.tool(name="delete_query", title="Delete Query")
-    def delete_query(query_id: str):
+    async def delete_query(query_id: str):
         """
         Permanently delete a saved query by its ID.
 
@@ -312,8 +345,15 @@ def register_queries(mcp):
             "User-Agent": "urlDNA-MCP"
         }
 
-        res = requests.delete(f"{config.urlDNA_API_URL}/query/{query_id}", headers=headers)
-        if not res.ok:
-            raise RuntimeError(f"[delete_query] Request failed: {res.status_code} - {res.text}")
+        url = f"{config.urlDNA_API_URL}/query/{query_id}"
 
-        return res.json() if res.text else {"status": "deleted", "query_id": query_id}
+        async with httpx.AsyncClient() as client:
+            try:
+                res = await client.delete(url, headers=headers, timeout=30.0)
+                res.raise_for_status()
+
+                return res.json() if res.text else {"status": "deleted", "query_id": query_id}
+            except httpx.HTTPStatusError as e:
+                raise RuntimeError(f"[delete_query] Request failed: {e.response.status_code} - {e.response.text}")
+            except Exception as e:
+                raise RuntimeError(f"[delete_query] Network error: {e}")

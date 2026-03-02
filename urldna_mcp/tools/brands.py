@@ -1,13 +1,14 @@
-import requests
+import httpx
+from typing import Optional
+
 import config
 from utils import get_api_key
-from typing import Optional
 
 
 def register_brands(mcp):
 
     @mcp.tool(name="list_brands", title="List Brands")
-    def list_brands(
+    async def list_brands(
         filter: Optional[str] = None,
         query: Optional[str] = None,
         page: Optional[int] = 1
@@ -78,14 +79,21 @@ def register_brands(mcp):
         if query is not None:
             params["query"] = query
 
-        res = requests.get(f"{config.urlDNA_API_URL}/brands", params=params, headers=headers)
-        if not res.ok:
-            raise RuntimeError(f"[list_brands] Request failed: {res.status_code} - {res.text}")
+        url = f"{config.urlDNA_API_URL}/brands"
 
-        return res.json()
+        async with httpx.AsyncClient() as client:
+            try:
+                res = await client.get(url, params=params, headers=headers, timeout=30.0)
+                res.raise_for_status()
+
+                return res.json()
+            except httpx.HTTPStatusError as e:
+                raise RuntimeError(f"[list_brands] Request failed: {e.response.status_code} - {e.response.text}")
+            except Exception as e:
+                raise RuntimeError(f"[list_brands] Network error: {e}")
 
     @mcp.tool(name="get_brand", title="Get Brand")
-    def get_brand(brand_id: str):
+    async def get_brand(brand_id: str):
         """
         Retrieve the full details of a specific brand by its ID.
 
@@ -115,14 +123,22 @@ def register_brands(mcp):
             "User-Agent": "urlDNA-MCP"
         }
 
-        res = requests.get(f"{config.urlDNA_API_URL}/brand/{brand_id}", headers=headers)
-        if not res.ok:
-            raise RuntimeError(f"[get_brand] Request failed: {res.status_code} - {res.text}")
+        url = f"{config.urlDNA_API_URL}/brand/{brand_id}"
 
-        return res.json()
+        async with httpx.AsyncClient() as client:
+            try:
+                res = await client.get(url, headers=headers, timeout=30.0)
+                res.raise_for_status()
+
+                return res.json()
+            except httpx.HTTPStatusError as e:
+                raise RuntimeError(f"[get_brand] Request failed: {e.response.status_code} - {e.response.text}")
+            except Exception as e:
+                raise RuntimeError(f"[get_brand] Network error: {e}")
+            
 
     @mcp.tool(name="brand_scans", title="Brand Scans")
-    def brand_scans(
+    async def brand_scans(
         brand_id: str,
         query: Optional[str] = None,
         page: Optional[int] = 1
@@ -188,12 +204,15 @@ def register_brands(mcp):
         if query is not None:
             params["query"] = query
 
-        res = requests.get(
-            f"{config.urlDNA_API_URL}/brand/{brand_id}/scans",
-            params=params,
-            headers=headers
-        )
-        if not res.ok:
-            raise RuntimeError(f"[brand_scans] Request failed: {res.status_code} - {res.text}")
+        url =  f"{config.urlDNA_API_URL}/brand/{brand_id}/scans"
 
-        return res.json()
+        async with httpx.AsyncClient() as client:
+            try:
+                res = await client.get(url, params=params, headers=headers, timeout=30.0)
+                res.raise_for_status()
+
+                return res.json()
+            except httpx.HTTPStatusError as e:
+                raise RuntimeError(f"[brand_scans] Request failed: {e.response.status_code} - {e.response.text}")
+            except Exception as e:
+                raise RuntimeError(f"[brand_scans] Network error: {e}")

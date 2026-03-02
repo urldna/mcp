@@ -1,5 +1,3 @@
-import os
-import json
 from urllib.parse import urlparse
 from fastmcp.server.dependencies import get_http_headers
 
@@ -9,15 +7,11 @@ def get_api_key():
     Header key: "authorization"
     """
     headers = get_http_headers()
-    auth_header = headers.get("authorization", "")
-    urlDNA_api_key = auth_header.removeprefix("Bearer").strip()
-    if not urlDNA_api_key:
-        urlDNA_api_key = os.getenv("authorization")
-    if not urlDNA_api_key:
-        raise ValueError("Missing or invalid Authorization header")
-    
-    return urlDNA_api_key
-
+    api_key = headers.get("x-api-key")    
+    if api_key:
+        return api_key.replace("Bearer", "").strip()
+    else:
+        raise ValueError("Missing or invalid urlDNA API key (provide the api key as X-API-KEY header)")
 
 def normalize_url(url: str) -> str:
     """

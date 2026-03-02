@@ -23,7 +23,7 @@ response = client.responses.create(
             "server_label": "urlDNA",
             "server_url": "https://mcp.urldna.io/sse",
             "headers": {
-                "Authorization": "Bearer <URLDNA_API_KEY>"  # Replace with your urlDNA API key
+                "x-api-key": "<URLDNA_API_KEY>"  # Replace with your urlDNA API key
             },
             "allowed_tools": [
                 # --- Scanning ---

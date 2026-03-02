@@ -123,7 +123,7 @@ You can use it directly with any platform or LLM that supports the MCP specifica
 
 | Tool           | Description                                                              |
 |----------------|--------------------------------------------------------------------------|
-| `get_api_docs` | Fetch the full urlDNA OpenAPI specification for API integration guidance. |
+| `search_docs`  | Fetch the full urlDNA OpenAPI  and documentations.                       |
 
 ---
 
@@ -143,7 +143,7 @@ To integrate the `urlDNA MCP server` in Claude Desktop, update your `claude_desk
         "run.py"
       ],
       "env": {
-        "authorization": "<urlDNA_API_KEY>"
+        "x-api-key": "<urlDNA_API_KEY>"
       }
     }
   }
@@ -192,7 +192,7 @@ response = client.responses.create(
             "server_label": "urlDNA",
             "server_url": "https://mcp.urldna.io/sse",
             "headers": {
-                "Authorization": "Bearer <URLDNA_API_KEY>"  # Replace with your urlDNA API key
+                "x-api-key": "<URLDNA_API_KEY>"  # Replace with your urlDNA API key
             },
             "allowed_tools": [
                 # --- Scanning ---
@@ -217,7 +217,7 @@ response = client.responses.create(
                 "brand_scans",
 
                 # --- API Reference ---
-                "get_api_docs",
+                "search_docs",
             ],
             "require_approval": "never"
         }
@@ -242,7 +242,7 @@ Build and run with Docker:
 docker build -t urldna-mcp-server .
 
 # Run the server
-docker run -p 8080:8080 -e authorization=<URLDNA_API_KEY> urldna-mcp-server
+docker run -p 8080:8080 -e x-api-key=<URLDNA_API_KEY> urldna-mcp-server
 ```
 
 ---

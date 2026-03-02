@@ -1,5 +1,3 @@
-import config
-
 # MCP
 from fastmcp.server import FastMCP
 
@@ -11,6 +9,9 @@ from tools.fast_check import register_fast_check
 from tools.get_docs import register_docs_search
 from tools.queries import register_queries
 from tools.brands import register_brands
+
+import os
+import config
 
 
 def main():
@@ -34,7 +35,7 @@ def main():
     # Brands
     register_brands(mcp)
 
-    # Docs
+    # API docs
     register_docs_search(mcp)
 
     # Run

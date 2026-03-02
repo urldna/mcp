@@ -1,9 +1,6 @@
 # urlDNA API URL
 urlDNA_API_URL = "https://api.urlDNA.io/v1"
 
-# urlDNA API OpenAPI
-OPENAPI_URL = "https://raw.githubusercontent.com/urldna/docs/main/api-reference/openapi.json"
-
 # urlDNA DOC URL
 MCP_DOC_URL = "https://docs.urldna.io/mcp"
 
