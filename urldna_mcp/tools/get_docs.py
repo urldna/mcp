@@ -16,7 +16,7 @@ def register_docs_search(mcp):
             query (str): The search term (e.g., 'Slack integration', 'API rate limits').
         """
 
-        headers = {"Accept": "text/event-stream", "Content-Type": "application/json"}
+        headers = {"Accept": "text/event-stream, application/json", "Content-Type": "application/json"}
         payload = {
             "jsonrpc": "2.0",
             "id": f"urlDNA-search-{uuid.uuid4()}",
@@ -37,5 +37,4 @@ def register_docs_search(mcp):
                                     if item.get("type") == "text":
                                         full_content.append(item.get("text"))
                         except: continue
-            
             return "\n".join(full_content) if full_content else "No documentation found."
