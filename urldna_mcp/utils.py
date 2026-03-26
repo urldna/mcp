@@ -1,17 +1,34 @@
+import os
 from urllib.parse import urlparse
 from fastmcp.server.dependencies import get_http_headers
 
 def get_api_key():
     """
-    Get urlDNA API Key from HTTP request header or os environment.
-    Header key: "authorization"
+    Get urlDNA API Key from multiple sources in priority order:
+    1. x-api-key environment variable (Claude Desktop stdio transport)
+    2. URLDNA_API_KEY environment variable (local runs)
+    3. x-api-key HTTP header (MCP server with SSE transport)
     """
-    headers = get_http_headers()
-    api_key = headers.get("x-api-key")    
+    # Try environment variables first (works with stdio transport)
+    api_key = os.getenv("x-api-key") or os.getenv("URLDNA_API_KEY")
     if api_key:
-        return api_key.replace("Bearer", "").strip()
-    else:
-        raise ValueError("Missing or invalid urlDNA API key (provide the api key as X-API-KEY header)")
+        return api_key.strip()
+    
+    # Try HTTP headers (works with SSE transport)
+    try:
+        headers = get_http_headers()
+        api_key = headers.get("x-api-key")    
+        if api_key:
+            return api_key.replace("Bearer", "").strip()
+    except Exception:
+        # Headers not available, continue to error
+        pass
+    
+    raise ValueError(
+        "Missing urlDNA API key. Set via:\n"
+        "  - Environment variable: x-api-key or URLDNA_API_KEY\n"
+        "  - HTTP header: X-API-KEY (for SSE transport)"
+    )
 
 def normalize_url(url: str) -> str:
     """
