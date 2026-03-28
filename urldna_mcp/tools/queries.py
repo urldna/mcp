@@ -11,6 +11,7 @@ VALID_ATTRIBUTES = ["id","domain", "ip", "submitted_url", "target_url", "scanned
                        "cookie_value", "http_transaction", "outgoing_link", "submitter_tag", "registrar", "category", "topic", "language", "text", "redirect_url"]
 
 VALID_OPERATORS = ["=", "!=", "LIKE", "!LIKE"]
+VALID_LOGICAL_OPERATORS = ["AND", "OR"]
 
 
 def _validate_filters(query_filters: list):
@@ -30,6 +31,11 @@ def _validate_filters(query_filters: list):
             raise ValueError(
                 f"Filter at index {i} has invalid operator '{f['operator']}'. "
                 f"Valid operators: {', '.join(VALID_OPERATORS)}"
+            )
+        if i>0 and f["logical_operator"] not in VALID_LOGICAL_OPERATORS:
+            raise ValueError(
+                f"Filter at index {i} is missing or has invalid logical_operator '{f.get('logical_operator')}'. "
+                f"Valid logical operators: {', '.join(VALID_LOGICAL_OPERATORS)}"
             )
 
 
@@ -97,6 +103,7 @@ def register_queries(mcp):
                     - attribute (str): The scan attribute to filter on.
                     - operator (str): Comparison operator (=, !=, LIKE, !LIKE).
                     - value (str): The value to match against.
+                    - logical_operator (str): Logical operator to combine with the next filter (AND, OR).
         Raises:
             RuntimeError: If the query ID is not found or the request fails.
         """
@@ -182,6 +189,7 @@ def register_queries(mcp):
             - attribute (str): The scan attribute to filter on.
             - operator  (str): Comparison operator.
             - value     (str): The value to match.
+            - logical_operator (str): Logical operator to combine with the next filter (AND, OR).
 
         --- VALID ATTRIBUTES ---
         id, domain, ip, submitted_url, target_url, scanned_from, user_agent, nsfw,
@@ -200,14 +208,14 @@ def register_queries(mcp):
         Find malicious mobile scans from Italy:
             query_filters = [
                 {"attribute": "malicious", "operator": "=",    "value": "true"},
-                {"attribute": "device",    "operator": "=",    "value": "MOBILE"},
-                {"attribute": "country_code", "operator": "=", "value": "IT"}
+                {"attribute": "device",    "operator": "=",    "value": "MOBILE", logical_operator": "AND},
+                {"attribute": "country_code", "operator": "=", "value": "IT", logical_operator": "OR"}
             ]
 
         Find scans using WordPress, not from Facebook:
             query_filters = [
                 {"attribute": "technology", "operator": "LIKE", "value": "wordpress"},
-                {"attribute": "domain",     "operator": "!=",   "value": "facebook.com"}
+                {"attribute": "domain",     "operator": "!=",   "value": "facebook.com", "logical_operator": "AND"}
             ]
 
         Args:
@@ -216,6 +224,7 @@ def register_queries(mcp):
                 - attribute (str): Scan field to filter on (see valid attributes above).
                 - operator  (str): One of =, !=, LIKE, !LIKE.
                 - value     (str): Value to match against the attribute.
+                - logical_operator (str): Logical operator to combine filters (AND, OR).
         Returns:
             list[dict]: Array of all user Query objects after creation.
         Raises:
@@ -263,6 +272,7 @@ def register_queries(mcp):
             - attribute (str): The scan attribute to filter on.
             - operator  (str): Comparison operator.
             - value     (str): The value to match.
+            - logical_operator (str): Logical operator to combine with the next filter (AND, OR).
 
         --- VALID ATTRIBUTES ---
         id, domain, ip, submitted_url, target_url, scanned_from, user_agent, nsfw,
@@ -284,6 +294,7 @@ def register_queries(mcp):
                 - attribute (str): Scan field to filter on.
                 - operator  (str): One of =, !=, LIKE, !LIKE.
                 - value     (str): Value to match against the attribute.
+                - logical_operator (str): Logical operator to combine filters (AND, OR).
         Returns:
             dict: The updated Query object.
         Raises:

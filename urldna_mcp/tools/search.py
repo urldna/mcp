@@ -62,22 +62,23 @@ def register_search(mcp):
         LIKE   Partial/wildcard match → title LIKE Login
         !LIKE  Exclude pattern        → domain !LIKE amazon
 
-        Combine multiple filters using AND:
+        Combine multiple filters using AND (both must be true) or OR (at least one must be true):
             domain = www.google.com AND title LIKE search
+            country_code = IT OR country_code = ES
 
         --- EXAMPLES ---
 
-        Find scans from mobile devices in Italy:
-            query="device = MOBILE AND country_code = IT"
+        Find scans from mobile devices in either Italy or Spain:
+            query="device = MOBILE AND country_code = IT OR country_code = ES"
 
-        Find malicious scans using WordPress:
-            query="malicious = true AND technology LIKE wordpress"
+        Find malicious scans using either WordPress or Shopify:
+            query="malicious = true AND technology LIKE wordpress OR technology LIKE shopify"
 
-        Find scans matching a specific favicon hash:
-            query="favicon LIKE d417e43"
+        Find scans from Italy that are either malicious or marked as NSFW:
+            query="country_code = IT AND malicious = true OR nsfw = true"
 
-        Find scans with a specific domain and page title pattern:
-            query="domain = www.google.com AND title LIKE search"
+        Find scans matching a specific favicon hash or a specific domain:
+            query="favicon LIKE d417e43 OR domain = suspicious-site.net"
 
         Find non-NSFW scans submitted via API from Germany:
             query="nsfw = false AND origin = API AND country_code = DE"
@@ -87,7 +88,7 @@ def register_search(mcp):
 
         Args:
             query (str): Search expression in urlDNA CQL syntax.
-                         Combine multiple conditions with AND.
+                         Combine multiple conditions with AND or OR.
             page (int, optional): Page number for pagination (1-indexed). Default is 1.
                                   Pages beyond page 1 require a PREMIUM subscription.
         Returns:
