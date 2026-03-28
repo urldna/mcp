@@ -32,11 +32,13 @@ def _validate_filters(query_filters: list):
                 f"Filter at index {i} has invalid operator '{f['operator']}'. "
                 f"Valid operators: {', '.join(VALID_OPERATORS)}"
             )
-        if i>0 and f["logical_operator"] not in VALID_LOGICAL_OPERATORS:
-            raise ValueError(
-                f"Filter at index {i} is missing or has invalid logical_operator '{f.get('logical_operator')}'. "
-                f"Valid logical operators: {', '.join(VALID_LOGICAL_OPERATORS)}"
-            )
+        if i > 0:
+            op = f.get("logical_operator")
+            if op not in VALID_LOGICAL_OPERATORS:
+                raise ValueError(
+                    f"Filter at index {i} is missing or has invalid logical_operator '{op}'. "
+                    f"Valid logical operators: {', '.join(VALID_LOGICAL_OPERATORS)}"
+                )
 
 
 def register_queries(mcp):
@@ -182,14 +184,15 @@ def register_queries(mcp):
         Create a new saved query with one or more filter conditions.
 
         Saved queries allow reusable, complex searches across the urlDNA database.
-        All filter conditions are combined with logical AND. Requires PREMIUM subscription.
+        Requires a PREMIUM subscription.
 
         --- QUERY FILTER STRUCTURE ---
-        Each filter in query_filters must be a dict with:
-            - attribute (str): The scan attribute to filter on.
-            - operator  (str): Comparison operator.
-            - value     (str): The value to match.
-            - logical_operator (str): Logical operator to combine with the next filter (AND, OR).
+        Each filter in query_filters must be a dict. 
+        - The FIRST filter (index 0) requires: attribute, operator, value.
+        - SUBSEQUENT filters (index 1+) require: attribute, operator, value, AND logical_operator.
+
+        The 'logical_operator' defines how the current filter connects to the 
+        filters defined before it.
 
         --- VALID ATTRIBUTES ---
         id, domain, ip, submitted_url, target_url, scanned_from, user_agent, nsfw,
@@ -205,30 +208,56 @@ def register_queries(mcp):
         !LIKE  Exclude pattern         (e.g., domain !LIKE amazon)
 
         --- EXAMPLES ---
-        Find malicious mobile scans from Italy:
+
+        1. Find malicious scans where the title is 'login' OR 'register':
             query_filters = [
-                {"attribute": "malicious", "operator": "=",    "value": "true"},
-                {"attribute": "device",    "operator": "=",    "value": "MOBILE", logical_operator": "AND},
-                {"attribute": "country_code", "operator": "=", "value": "IT", logical_operator": "OR"}
+                {
+                    "attribute": "malicious",
+                    "operator": "=",
+                    "value": "true"
+                },
+                {
+                    "attribute": "title",
+                    "operator": "LIKE",
+                    "value": "login",
+                    "logical_operator": "AND"
+                },
+                {
+                    "attribute": "title",
+                    "operator": "LIKE",
+                    "value": "register",
+                    "logical_operator": "OR"
+                }
             ]
 
-        Find scans using WordPress, not from Facebook:
+        2. Find scans using WordPress, but NOT from facebook.com:
             query_filters = [
-                {"attribute": "technology", "operator": "LIKE", "value": "wordpress"},
-                {"attribute": "domain",     "operator": "!=",   "value": "facebook.com", "logical_operator": "AND"}
+                {
+                    "attribute": "technology", 
+                    "operator": "LIKE", 
+                    "value": "wordpress"
+                },
+                {
+                    "attribute": "domain",     
+                    "operator": "!=",   
+                    "value": "facebook.com", 
+                    "logical_operator": "AND"
+                }
             ]
 
         Args:
-            name (str): Descriptive name for the saved query (e.g., "Malicious IT Mobile Scans").
-            query_filters (list[dict]): Array of filter conditions. Each dict requires:
-                - attribute (str): Scan field to filter on (see valid attributes above).
+            name (str): Descriptive name for the saved query (e.g., "Login Phish Search").
+            query_filters (list[dict]): Array of filter conditions. 
+                - attribute (str): Scan field to filter on.
                 - operator  (str): One of =, !=, LIKE, !LIKE.
                 - value     (str): Value to match against the attribute.
-                - logical_operator (str): Logical operator to combine filters (AND, OR).
+                - logical_operator (str, optional): Required for all filters except the first. 
+                Must be 'AND' or 'OR'.
         Returns:
             list[dict]: Array of all user Query objects after creation.
         Raises:
-            ValueError: If any filter is missing required fields or contains invalid values.
+            ValueError: If any filter is missing required fields, has invalid values, 
+                        or if a logical_operator is missing on chained filters.
             RuntimeError: If the API key retrieval or HTTP request fails.
         """
         _validate_filters(query_filters)
@@ -265,14 +294,15 @@ def register_queries(mcp):
 
         Replaces ALL previous filter conditions with the new provided list.
         Partial updates are not supported — always provide the full desired filter set.
-        Requires PREMIUM subscription.
+        Requires a PREMIUM subscription.
 
         --- QUERY FILTER STRUCTURE ---
-        Each filter in query_filters must be a dict with:
-            - attribute (str): The scan attribute to filter on.
-            - operator  (str): Comparison operator.
-            - value     (str): The value to match.
-            - logical_operator (str): Logical operator to combine with the next filter (AND, OR).
+        Each filter in query_filters must be a dict. 
+        - The FIRST filter (index 0) requires: attribute, operator, value.
+        - SUBSEQUENT filters (index 1+) require: attribute, operator, value, AND logical_operator.
+
+        The 'logical_operator' defines how the current filter connects to the 
+        filters defined before it.
 
         --- VALID ATTRIBUTES ---
         id, domain, ip, submitted_url, target_url, scanned_from, user_agent, nsfw,
@@ -287,6 +317,29 @@ def register_queries(mcp):
         LIKE   Partial/wildcard match  (e.g., technology LIKE wordpress)
         !LIKE  Exclude pattern         (e.g., domain !LIKE amazon)
 
+        --- EXAMPLE: UPDATING TO MULTIPLE FILTERS ---
+        To update a query to find (Malicious AND Title LIKE 'login') OR (Title LIKE 'register'):
+        
+        query_filters = [
+            {
+                "attribute": "malicious",
+                "operator": "=",
+                "value": "true"
+            },
+            {
+                "attribute": "title",
+                "operator": "LIKE",
+                "value": "login",
+                "logical_operator": "AND"
+            },
+            {
+                "attribute": "title",
+                "operator": "LIKE",
+                "value": "register",
+                "logical_operator": "OR"
+            }
+        ]
+
         Args:
             query_id (str): Unique identifier of the query to update.
             name (str): New name for the query.
@@ -294,11 +347,13 @@ def register_queries(mcp):
                 - attribute (str): Scan field to filter on.
                 - operator  (str): One of =, !=, LIKE, !LIKE.
                 - value     (str): Value to match against the attribute.
-                - logical_operator (str): Logical operator to combine filters (AND, OR).
+                - logical_operator (str, optional): Required for all filters except the first. 
+                  Must be 'AND' or 'OR'.
         Returns:
             dict: The updated Query object.
         Raises:
-            ValueError: If any filter is missing required fields or contains invalid values.
+            ValueError: If any filter is missing required fields, has invalid values, 
+                        or if a logical_operator is missing on chained filters.
             RuntimeError: If the query ID is not found or the request fails.
         """
         _validate_filters(query_filters)

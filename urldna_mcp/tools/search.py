@@ -68,6 +68,13 @@ def register_search(mcp):
 
         --- EXAMPLES ---
 
+        CORRECT (Partial search):
+            query="domain LIKE google" 
+        CORRECT (Exact search):
+            query="domain = www.google.com"
+        WRONG (Will fail to find subdomains):
+            query="domain = google"
+
         Find scans from mobile devices in either Italy or Spain:
             query="device = MOBILE AND country_code = IT OR country_code = ES"
 
