@@ -138,7 +138,7 @@ To integrate the `urlDNA MCP server` in Claude Desktop, update your `claude_desk
       "command": "uv",
       "args": [
         "--directory",
-        "<YOUR_PATH>\urldna_mcp",
+        "<YOUR_PATH>\\urldna_mcp",
         "run",
         "run.py"
       ],
