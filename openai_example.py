@@ -4,7 +4,7 @@ from openai import OpenAI
 client = OpenAI()
 
 response = client.responses.create(
-    model="gpt-4.1",  # GPT-4.1 supports native MCP tool use
+    model="gpt-3.5-turbo",  # Note: MCP tool use requires a Responses API-compatible model
     input=[
         {
             "role": "system",

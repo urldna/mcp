@@ -25,7 +25,7 @@ async def main():
                 await session.initialize()
 
                 response = await client.aio.models.generate_content(
-                    model="gemini-2.5-flash",
+                    model="gemini-3.5-flash",
                     contents="Search in urlDNA for malicious scans with title like paypal",
                     config=genai.types.GenerateContentConfig(
                         system_instruction="You are a cybersecurity analyst using urlDNA.",

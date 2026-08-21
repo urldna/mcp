@@ -4,7 +4,7 @@
 
 ![Claude Prompt](https://github.com/urldna/mcp/blob/main/claude_prompt.png?raw=true)
 
-The `urlDNA MCP Server` enables native tool use for security-focused LLM agents like OpenAI GPT-4.1 and Claude Desktop, providing a direct interface to interact with the [urlDNA](https://urldna.io) threat intelligence platform via API.
+The `urlDNA MCP Server` enables native tool use for security-focused LLM agents like OpenAI GPT, Google Gemini and Claude Desktop, providing a direct interface to interact with the [urlDNA](https://urldna.io) threat intelligence platform via API.
 
 The repository exposes the same toolset over two transports:
 
@@ -90,7 +90,7 @@ https://mcp.urldna.io/
 
 This server is accessible over **streamable HTTP**, which makes it suitable for Cloud Run and other request-driven platforms.
 
-You can use it directly with any platform or LLM that supports the MCP specification (e.g., Claude Desktop, OpenAI GPT-4.1).
+You can use it directly with any platform or LLM that supports the MCP specification (e.g., Claude Desktop, OpenAI GPT, Google Gemini).
 
 ---
 
@@ -176,7 +176,7 @@ Claude will automatically call the correct tool and return results from the urlD
 
 ---
 
-## Using the MCP Server with OpenAI GPT-4.1
+## Using the MCP Server with OpenAI GPT
 
 ```python
 from openai import OpenAI
@@ -185,7 +185,7 @@ from openai import OpenAI
 client = OpenAI()
 
 response = client.responses.create(
-    model="gpt-4.1",  # GPT-4.1 supports native MCP tool use
+    model="gpt-3.5-turbo",  # Note: MCP tool use requires a Responses API-compatible model
     input=[
         {
             "role": "system",
@@ -241,6 +241,59 @@ response = client.responses.create(
 )
 
 print(response.output)
+```
+
+---
+
+## Using the MCP Server with Google Gemini
+
+Gemini connects to the `urlDNA MCP` server directly as an MCP client session, so tools are auto-discovered rather than passed as an `allowed_tools` list.
+
+```python
+import asyncio
+
+import httpx
+from google import genai
+from mcp import ClientSession
+from mcp.client.streamable_http import streamable_http_client
+
+# Initialize Gemini client (assumes GEMINI_API_KEY is set via environment variable)
+client = genai.Client()
+
+MCP_SERVER_URL = "https://mcp.urldna.io/"
+MCP_HEADERS = {
+    "x-api-key": "<URLDNA_API_KEY>"  # Replace with your urlDNA API key
+}
+
+
+async def main():
+    async with httpx.AsyncClient(headers=MCP_HEADERS) as http_client:
+        async with streamable_http_client(MCP_SERVER_URL, http_client=http_client) as (
+            read,
+            write,
+            _,
+        ):
+            async with ClientSession(read, write) as session:
+                await session.initialize()
+
+                response = await client.aio.models.generate_content(
+                    model="gemini-2.5-flash",
+                    contents="Search in urlDNA for malicious scans with title like paypal",
+                    config=genai.types.GenerateContentConfig(
+                        system_instruction="You are a cybersecurity analyst using urlDNA.",
+                        temperature=0.7,
+                        # Gemini automatically discovers and calls the tools exposed
+                        # by the MCP session (fast_check, new_scan, get_scan, search,
+                        # saved queries, brand monitoring, search_docs, ...).
+                        tools=[session],
+                    ),
+                )
+
+                print(response.text)
+
+
+if __name__ == "__main__":
+    asyncio.run(main())
 ```
 
 ---
