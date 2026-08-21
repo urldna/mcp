@@ -20,7 +20,7 @@ INSTRUCTIONS = (
     "SEARCH TOOLS:\n"
     "- search        : Query the urlDNA database using CQL (Custom Query Language) with attributes "
     "like domain, ip, technology, malicious, country_code, favicon, and more. "
-    "Combine filters with AND. Supports =, !=, LIKE, !LIKE operators.\n\n"
+    "Combine filters with AND or OR. Supports =, !=, LIKE, !LIKE operators.\n\n"
 
     "SAVED QUERY TOOLS (PREMIUM):\n"
     "- list_queries        : List all saved queries for the authenticated user.\n"
@@ -35,10 +35,10 @@ INSTRUCTIONS = (
     "(ALL / FREE / PREMIUM / USER_BRANDS).\n"
     "- get_brand       : Retrieve full details of a specific brand by ID.\n"
     "- brand_scans : Retrieve all scans associated with a brand. Supports optional CQL filtering "
-    "to narrow results (e.g., malicious = true AND country_code = IT).\n\n"
+    "to narrow results (e.g., malicious = true AND country_code = IT, or domain = a.com OR domain = b.com).\n\n"
 
     "API DOCUMENTATION:\n"
-    "- get_api_docs : Fetch the full urlDNA OpenAPI specification. Use when a user asks about available "
+    "- search_docs : Search the urlDNA documentation and API reference. Use when a user asks about available "
     "endpoints, request parameters, response schemas, or how to integrate with the API directly.\n\n"
 
     "GENERAL GUIDELINES:\n"

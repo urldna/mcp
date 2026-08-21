@@ -1,10 +1,11 @@
 from urllib.parse import urlparse
 from fastmcp.server.dependencies import get_http_headers
 
+
 def get_api_key():
     """
     Get urlDNA API Key from HTTP request header or os environment.
-    Header key: "authorization"
+    Header key: "x-api-key"
     """
     headers = get_http_headers()
     api_key = headers.get("x-api-key")    
@@ -22,18 +23,6 @@ def normalize_url(url: str) -> str:
     if not parsed.scheme:
         url = "https://" + url
     return url
-
-
-
-def _strip_blob_urls(scan: dict) -> dict:
-    """
-    Remove blob_url fields from screenshot and favicon sections to reduce payload size.
-    """
-    for field in ("screenshot", "favicon"):
-        section = scan.get(field)
-        if isinstance(section, dict) and "blob_url" in section:
-            section.pop("blob_url")
-    return scan
 
 
 def truncate_scan_length(scan_result: dict) -> dict:
@@ -74,11 +63,13 @@ def truncate_scan_length(scan_result: dict) -> dict:
         if scan_result.get("dom"):
             del scan_result["dom"]
         
-        # HTTP Transactions
-        http_transactions = []
-        for http_transaction in scan_result["http_transactions"]:
-            http_transactions.append(http_transaction["url"])
-        scan_result["http_trnasction"] = http_transaction
+        # Keep only the request URLs from the HTTP transaction list.
+        if scan_result.get("http_transactions"):
+            scan_result["http_transactions"] = [
+                transaction.get("url")
+                for transaction in scan_result["http_transactions"]
+                if transaction.get("url")
+            ]
 
     return scan_result
         

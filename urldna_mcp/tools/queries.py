@@ -4,11 +4,46 @@ from typing import Optional
 import config
 from utils import get_api_key
 
-# Valid attributes for QueryFilter
-VALID_ATTRIBUTES = ["id","domain", "ip", "submitted_url", "target_url", "scanned_from", "user_agent", "nsfw", "device",
-                       "origin", "asn", "org", "protocol", "title", "city", "country_code", "isp", "favicon",
-                       "screenshot", "issuer", "serial_number", "subject", "malicious", "technology", "cookie_name", "http_referer"
-                       "cookie_value", "http_transaction", "outgoing_link", "submitter_tag", "registrar", "category", "topic", "language", "text", "redirect_url"]
+# Valid attributes for saved query filters.
+VALID_ATTRIBUTES = [
+    "id",
+    "domain",
+    "ip",
+    "submitted_url",
+    "target_url",
+    "scanned_from",
+    "user_agent",
+    "nsfw",
+    "device",
+    "origin",
+    "asn",
+    "org",
+    "protocol",
+    "title",
+    "city",
+    "country_code",
+    "isp",
+    "favicon",
+    "screenshot",
+    "issuer",
+    "serial_number",
+    "subject",
+    "malicious",
+    "technology",
+    "cookie_name",
+    "http_referer",
+    "cookie_value",
+    "http_transaction",
+    "outgoing_link",
+    "submitter_tag",
+    "registrar",
+    "category",
+    "topic",
+    "language",
+    "text",
+    "redirect_url",
+    "threat",
+]
 
 VALID_OPERATORS = ["=", "!=", "LIKE", "!LIKE"]
 

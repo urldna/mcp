@@ -15,7 +15,7 @@ import config
 
 
 def main():
-    """Main entry point for the urlDNA MCP SSE server."""
+    """Main entry point for the urlDNA MCP streamable HTTP server."""
     mcp = FastMCP(
         name="urlDNA MCP",
         instructions=config.INSTRUCTIONS
@@ -39,10 +39,16 @@ def main():
     register_docs_search(mcp)
 
     # Run
+    port = int(os.getenv("PORT", "8080"))
+    path = os.getenv("MCP_PATH", "/")
+
     mcp.run(
-        transport="sse",
+        transport="streamable-http",
         host="0.0.0.0",
-        port=8080,
+        port=port,
+        path=path,
+        stateless_http=True,
+        json_response=True,
     )
 
 

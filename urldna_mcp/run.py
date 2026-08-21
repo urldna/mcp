@@ -15,7 +15,7 @@ import config
 
 
 def main():
-    """Main entry point for the urlDNA MCP SSE server."""
+    """Main entry point for the local urlDNA MCP stdio server."""
     mcp = FastMCP(
         name="urlDNA MCP",
         instructions=config.INSTRUCTIONS
@@ -38,7 +38,7 @@ def main():
     # Docs
     register_docs_search(mcp)
 
-    # RUN
+    # Local desktop clients connect over stdio.
     mcp.run(transport="stdio")
 
 

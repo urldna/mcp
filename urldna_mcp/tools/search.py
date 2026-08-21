@@ -62,8 +62,9 @@ def register_search(mcp):
         LIKE   Partial/wildcard match → title LIKE Login
         !LIKE  Exclude pattern        → domain !LIKE amazon
 
-        Combine multiple filters using AND:
+        Combine multiple filters using AND or OR:
             domain = www.google.com AND title LIKE search
+            domain = google.com OR domain = youtube.com
 
         --- EXAMPLES ---
 
@@ -79,6 +80,9 @@ def register_search(mcp):
         Find scans with a specific domain and page title pattern:
             query="domain = www.google.com AND title LIKE search"
 
+        Find scans for either of two domains:
+            query="domain = google.com OR domain = youtube.com"
+
         Find non-NSFW scans submitted via API from Germany:
             query="nsfw = false AND origin = API AND country_code = DE"
 
@@ -87,7 +91,7 @@ def register_search(mcp):
 
         Args:
             query (str): Search expression in urlDNA CQL syntax.
-                         Combine multiple conditions with AND.
+                         Combine multiple conditions with AND or OR.
             page (int, optional): Page number for pagination (1-indexed). Default is 1.
                                   Pages beyond page 1 require a PREMIUM subscription.
         Returns:

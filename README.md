@@ -6,6 +6,11 @@
 
 The `urlDNA MCP Server` enables native tool use for security-focused LLM agents like OpenAI GPT-4.1 and Claude Desktop, providing a direct interface to interact with the [urlDNA](https://urldna.io) threat intelligence platform via API.
 
+The repository exposes the same toolset over two transports:
+
+- `stdio` for local desktop integrations such as Claude Desktop.
+- `streamable-http` for hosted deployments such as Cloud Run.
+
 ---
 
 ## Installation & Setup
@@ -43,11 +48,16 @@ uv sync
 uv run python urldna_mcp/run.py
 ```
 
-3. **Run the MCP server in SSE mode:**
+3. **Run the MCP server in streamable HTTP mode:**
 
 ```bash
 uv run python urldna_mcp/server.py
 ```
+
+The hosted server reads these environment variables:
+
+- `PORT`: HTTP port to bind to. Defaults to `8080`.
+- `MCP_PATH`: Public MCP endpoint path. Defaults to `/`.
 
 ### Development
 
@@ -75,10 +85,10 @@ uv run flake8 .
 The `urlDNA MCP` server is already **hosted and available** at:
 
 ```
-https://mcp.urldna.io/sse
+https://mcp.urldna.io/
 ```
 
-This server is accessible over **Server-Sent Events (SSE)** protocol, which supports streaming interactions between LLMs and the backend tools.
+This server is accessible over **streamable HTTP**, which makes it suitable for Cloud Run and other request-driven platforms.
 
 You can use it directly with any platform or LLM that supports the MCP specification (e.g., Claude Desktop, OpenAI GPT-4.1).
 
@@ -98,7 +108,7 @@ You can use it directly with any platform or LLM that supports the MCP specifica
 
 | Tool     | Description                                                                                       |
 |----------|---------------------------------------------------------------------------------------------------|
-| `search` | Search scans using CQL (Custom Query Language) across domain, IP, technology, malicious flag, and more. Supports pagination (page 2+ requires PREMIUM). |
+| `search` | Search scans using CQL (Custom Query Language) across domain, IP, technology, malicious flag, and more. Supports `AND` and `OR` expressions plus pagination (page 2+ requires PREMIUM). |
 
 ### Saved Queries
 
@@ -138,9 +148,9 @@ To integrate the `urlDNA MCP server` in Claude Desktop, update your `claude_desk
       "command": "uv",
       "args": [
         "--directory",
-        "C:\\Users\\pripamonti\\urlDNA\\mcp\\urldna_mcp",
+        "<YOUR_PATH>\\mcp",
         "run",
-        "run.py"
+        "urldna_mcp\\run.py"
       ],
       "env": {
         "x-api-key": "<urlDNA_API_KEY>"
@@ -150,7 +160,9 @@ To integrate the `urlDNA MCP server` in Claude Desktop, update your `claude_desk
 }
 ```
 
-> Replace `<YOUR_PATH>` with the actual path to the project directory and `<urlDNA_API_KEY>` with your API key from [https://urldna.io](https://urldna.io).
+> Replace `<YOUR_PATH>` with the parent directory that contains this repository and `<urlDNA_API_KEY>` with your API key from [https://urldna.io](https://urldna.io).
+
+For hosted MCP clients, point them at `https://mcp.urldna.io/` or your own deployed `MCP_PATH`.
 
 Once configured, you can prompt Claude with natural language, for example:
 
@@ -181,7 +193,7 @@ response = client.responses.create(
         },
         {
             "role": "user",
-            "content": [{"type": "input_text", "text": "Search in urlDNA for malicious scans with title like paypal"}]
+          "content": [{"type": "input_text", "text": "Search in urlDNA for malicious scans with title like paypal or login"}]
         }
     ],
     text={"format": {"type": "text"}},
@@ -190,7 +202,7 @@ response = client.responses.create(
         {
             "type": "mcp",
             "server_label": "urlDNA",
-            "server_url": "https://mcp.urldna.io/sse",
+            "server_url": "https://mcp.urldna.io/",
             "headers": {
                 "x-api-key": "<URLDNA_API_KEY>"  # Replace with your urlDNA API key
             },
@@ -201,7 +213,7 @@ response = client.responses.create(
                 "fast_check",     # Lightweight instant safety check (SAFE / MALICIOUS / UNRATED)
 
                 # --- Search ---
-                "search",         # Search scans using CQL (Custom Query Language)
+                "search",         # Search scans using CQL (Custom Query Language, AND/OR supported)
 
                 # --- Saved Queries (PREMIUM) ---
                 "list_queries",
@@ -243,6 +255,27 @@ docker build -t urldna-mcp-server .
 
 # Run the server
 docker run -p 8080:8080 -e x-api-key=<URLDNA_API_KEY> urldna-mcp-server
+
+# Optional: override the public MCP path if you do not want /
+docker run -p 8080:8080 -e MCP_PATH=/custom-path -e x-api-key=<URLDNA_API_KEY> urldna-mcp-server
+
+# Cloud Run example
+gcloud run deploy urldna-mcp-server \
+  --source . \
+  --allow-unauthenticated \
+  --set-env-vars MCP_PATH=/
+```
+
+## Search Syntax
+
+The `search` and `brand_scans` tools forward the provided CQL directly to the urlDNA API. You can combine conditions with either `AND` or `OR`.
+
+Examples:
+
+```text
+malicious = true AND technology LIKE wordpress
+domain = google.com OR domain = youtube.com
+(domain = paypal.com OR title LIKE paypal) AND country_code = IT
 ```
 
 ---

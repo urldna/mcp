@@ -21,7 +21,7 @@ response = client.responses.create(
         {
             "type": "mcp",
             "server_label": "urlDNA",
-            "server_url": "https://mcp.urldna.io/sse",
+            "server_url": "https://mcp.urldna.io/",
             "headers": {
                 "x-api-key": "<URLDNA_API_KEY>"  # Replace with your urlDNA API key
             },
@@ -48,7 +48,7 @@ response = client.responses.create(
                 "brand_scans",      # Get all scans associated with a brand (supports CQL filter)
 
                 # --- API Reference ---
-                "get_api_docs",     # Fetch the full urlDNA OpenAPI specification
+                "search_docs",      # Search the urlDNA documentation and API reference
             ],
             "require_approval": "never"
         }

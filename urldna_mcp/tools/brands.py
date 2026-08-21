@@ -151,8 +151,9 @@ def register_brands(mcp):
         for more targeted threat analysis. Requires PREMIUM subscription.
 
         --- CQL FILTER SYNTAX (optional query parameter) ---
-        Combine scan attributes using AND:
+        Combine scan attributes using AND or OR:
             malicious = true AND device = MOBILE
+            domain = paypal.com OR domain = paypal-login-example.com
             country_code = IT AND technology LIKE phishing
 
         Supported operators: =, !=, LIKE, !LIKE
@@ -171,6 +172,9 @@ def register_brands(mcp):
 
         Get mobile scans from Italy for a brand:
             brand_scans(brand_id="abc123", query="device = MOBILE AND country_code = IT")
+
+        Get scans for either of two domains within a brand:
+            brand_scans(brand_id="abc123", query="domain = paypal.com OR domain = paypal-login-example.com")
 
         Get second page of results:
             brand_scans(brand_id="abc123", page=2)
