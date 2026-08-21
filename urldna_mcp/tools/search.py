@@ -62,17 +62,25 @@ def register_search(mcp):
         LIKE   Partial/wildcard match → title LIKE Login
         !LIKE  Exclude pattern        → domain !LIKE amazon
 
+        Combine multiple filters using AND (both must be true) or OR (at least one must be true):
         Combine multiple filters using AND or OR:
             domain = www.google.com AND title LIKE search
             domain = google.com OR domain = youtube.com
 
         --- EXAMPLES ---
 
-        Find scans from mobile devices in Italy:
-            query="device = MOBILE AND country_code = IT"
+        CORRECT (Partial search):
+            query="domain LIKE google" 
+        CORRECT (Exact search):
+            query="domain = www.google.com"
+        WRONG (Will fail to find subdomains):
+            query="domain = google"
 
-        Find malicious scans using WordPress:
-            query="malicious = true AND technology LIKE wordpress"
+        Find scans from mobile devices in either Italy or Spain:
+            query="device = MOBILE AND country_code = IT OR country_code = ES"
+
+        Find malicious scans using either WordPress or Shopify:
+            query="malicious = true AND technology LIKE wordpress OR technology LIKE shopify"
 
         Find scans matching a specific favicon hash:
             query="favicon LIKE d417e43"
@@ -91,6 +99,7 @@ def register_search(mcp):
 
         Args:
             query (str): Search expression in urlDNA CQL syntax.
+                         Combine multiple conditions with AND or OR.
                          Combine multiple conditions with AND or OR.
             page (int, optional): Page number for pagination (1-indexed). Default is 1.
                                   Pages beyond page 1 require a PREMIUM subscription.
